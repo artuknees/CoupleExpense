@@ -1,0 +1,27 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background matching the image's dark green -->
+  <rect width="512" height="512" rx="128" fill="#064e3b"/>
+  
+  <!-- Lizard Body/Head -->
+  <path d="M256 100C160 100 80 180 80 280C80 380 160 420 256 420C352 420 432 380 432 280C432 180 352 100 256 100Z" fill="#84cc16"/>
+  
+  <!-- Yellow Belly/Mouth Area -->
+  <path d="M100 280C100 350 160 400 256 400C352 400 412 350 412 280H100Z" fill="#facc15"/>
+  
+  <!-- Eyes -->
+  <circle cx="180" cy="220" r="45" fill="white"/>
+  <circle cx="180" cy="220" r="25" fill="#1a1a1a"/>
+  <circle cx="180" cy="210" r="8" fill="white" fill-opacity="0.8"/>
+  
+  <circle cx="332" cy="220" r="45" fill="white"/>
+  <circle cx="332" cy="220" r="25" fill="#1a1a1a"/>
+  <circle cx="332" cy="210" r="8" fill="white" fill-opacity="0.8"/>
+  
+  <!-- Tongue -->
+  <path d="M240 320C240 320 230 460 256 460C282 460 272 320 272 320" fill="#ef4444"/>
+  <path d="M256 420V460" stroke="#991b1b" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Nostrils -->
+  <circle cx="230" cy="260" r="5" fill="#166534"/>
+  <circle cx="282" cy="260" r="5" fill="#166534"/>
+</svg>

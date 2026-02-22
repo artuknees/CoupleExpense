@@ -20,8 +20,13 @@ export const metadata: Metadata = {
   title: 'Cule & Jen Expenses',
   description: 'Shared expense tracker for Cule and Jen',
   icons: {
-    icon: '/icon.png',
-    apple: '/icon.png',
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/icon.svg',
+    apple: [
+      { url: '/icon.svg', sizes: '180x180', type: 'image/svg+xml' },
+    ],
   },
   appleWebApp: {
     capable: true,
