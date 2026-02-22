@@ -7,18 +7,23 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Shared expense tracker for Cule and Jen',
     start_url: '/',
     display: 'standalone',
-    background_color: '#F8FAFC',
+    background_color: '#064e3b',
     theme_color: '#059669',
     icons: [
       {
-        src: 'https://picsum.photos/192/192',
-        sizes: '192x192',
-        type: 'image/png',
+        src: '/icon.svg',
+        sizes: 'any',
+        type: 'image/svg+xml',
       },
       {
-        src: 'https://picsum.photos/512/512',
+        src: '/icon.svg',
+        sizes: '192x192',
+        type: 'image/svg+xml',
+      },
+      {
+        src: '/icon.svg',
         sizes: '512x512',
-        type: 'image/png',
+        type: 'image/svg+xml',
       },
     ],
   };

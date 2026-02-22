@@ -19,6 +19,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'Cule & Jen Expenses',
   description: 'Shared expense tracker for Cule and Jen',
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
