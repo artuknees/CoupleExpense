@@ -24,10 +24,17 @@ function getAdminApp() {
       };
 
       if (hasEmail && hasKey) {
+        let privateKey = process.env.FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY || '';
+        // Handle cases where the key might be wrapped in quotes
+        if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+          privateKey = privateKey.substring(1, privateKey.length - 1);
+        }
+        privateKey = privateKey.replace(/\\n/g, '\n');
+
         config.credential = admin.credential.cert({
           projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
           clientEmail: process.env.FIREBASE_SERVICE_ACCOUNT_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+          privateKey: privateKey,
         } as any);
       } else {
         config.projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;

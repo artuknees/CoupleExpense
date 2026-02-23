@@ -27,6 +27,7 @@ export default function SharedImage() {
           fill 
           className={styles.image} 
           referrerPolicy="no-referrer"
+          unoptimized
         />
       ) : (
         <div className={styles.placeholder}>

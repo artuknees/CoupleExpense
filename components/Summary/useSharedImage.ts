@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { db, storage, auth } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export function useSharedImage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -21,45 +20,83 @@ export function useSharedImage() {
     return () => unsub();
   }, []);
 
+  const resizeImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 600;
+          const MAX_HEIGHT = 600;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Use JPEG with 0.7 quality to keep size small
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          resolve(dataUrl);
+        };
+        img.onerror = reject;
+      };
+      reader.onerror = reject;
+    });
+  };
+
   const handleUpload = async (file: File) => {
     if (!file) return;
 
     const currentUser = auth.currentUser;
     if (!currentUser) {
-      alert('You must be logged in to upload images.');
+      alert('You must be logged in to update the image.');
       return;
     }
 
     try {
       setUploading(true);
-      console.log('Uploading via API route...');
+      console.log('Processing image for Firestore storage...');
 
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const contentType = response.headers.get('content-type');
-      if (!response.ok) {
-        if (contentType && contentType.includes('application/json')) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Upload failed');
-        } else {
-          const errorText = await response.text();
-          console.error('Server returned non-JSON error:', errorText);
-          throw new Error(`Server error (${response.status}). Check console for details.`);
-        }
+      // Resize and convert to Base64
+      const base64Image = await resizeImage(file);
+      
+      // Check size (Firestore limit is 1MB, but we want to stay well below)
+      const sizeInBytes = Math.round((base64Image.length * 3) / 4);
+      if (sizeInBytes > 800000) {
+        throw new Error('Image is too large even after compression. Please try a smaller image.');
       }
 
-      const data = await response.json();
-      console.log('Upload successful via API:', data.url);
-      // The Firestore listener in useEffect will pick up the change automatically
+      console.log(`Image processed. Size: ${Math.round(sizeInBytes / 1024)}KB`);
+
+      // Update Firestore directly with the Base64 string
+      await setDoc(doc(db, 'settings', 'appImage'), {
+        url: base64Image,
+        updatedAt: new Date(),
+        uploadedBy: currentUser.uid,
+        type: 'base64'
+      });
+
+      console.log('Firestore updated with Base64 image');
     } catch (error: any) {
-      console.error('API Upload failed:', error);
-      alert(`Upload failed: ${error.message}`);
+      console.error('Image update failed:', error);
+      alert(`Update failed: ${error.message}`);
     } finally {
       setUploading(false);
     }
