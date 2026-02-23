@@ -11,6 +11,7 @@ interface SummaryData {
 
 export function useSummary() {
   const [summary, setSummary] = useState<SummaryData>({ culeOwes: 0, jenOwes: 0 });
+  const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [showConfirmSync, setShowConfirmSync] = useState(false);
   const [showConfirmSettle, setShowConfirmSettle] = useState(false);
@@ -28,6 +29,10 @@ export function useSummary() {
           culeOwes: name === 'Cule' ? amt : 0
         });
       }
+      setLoading(false);
+    }, (error) => {
+      console.error('Summary snapshot error:', error);
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -107,6 +112,7 @@ export function useSummary() {
 
   return {
     summary,
+    loading,
     syncing,
     showConfirmSync,
     setShowConfirmSync,

@@ -1,13 +1,16 @@
 'use client';
 
 import React from 'react';
-import { Wallet, RefreshCw } from 'lucide-react';
+import { Wallet, RefreshCw, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSummary } from './useSummary';
+import { useSharedImage } from './useSharedImage';
+import SharedImage from './SharedImage';
 import styles from './Summary.module.css';
 
 export default function Summary() {
   const {
+    loading: summaryLoading,
     syncing,
     showConfirmSync,
     setShowConfirmSync,
@@ -19,9 +22,20 @@ export default function Summary() {
     whoOwes,
     absoluteBalance
   } = useSummary();
+  const { loading: imageLoading } = useSharedImage();
+
+  if (summaryLoading || imageLoading) {
+    return (
+      <div className="flex items-center justify-center p-12 bg-slate-50 rounded-3xl border border-slate-100">
+        <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.grid}>
+      <SharedImage />
+      
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
