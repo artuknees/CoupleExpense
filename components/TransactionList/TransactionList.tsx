@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { Receipt, ArrowRightLeft, Clock, Trash2 } from 'lucide-react';
+import { Receipt, ArrowRightLeft, Clock, Trash2, Pencil, MoreVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTransactionList } from './useTransactionList';
+import EditTransactionModal from './EditTransactionModal';
 import styles from './TransactionList.module.css';
 
 export default function TransactionList() {
@@ -14,9 +15,21 @@ export default function TransactionList() {
     hasMore,
     deletingId,
     setDeletingId,
+    editingTransaction,
+    setEditingTransaction,
     handleLoadMore,
-    handleDelete
+    handleDelete,
+    handleUpdate
   } = useTransactionList();
+
+  const [menuOpenId, setMenuOpenId] = React.useState<string | null>(null);
+
+  // Close menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = () => setMenuOpenId(null);
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, []);
 
   if (loading) {
     return (
@@ -52,12 +65,19 @@ export default function TransactionList() {
                   </div>
                   <div className={styles.textInfo}>
                     <div className={styles.headerRow}>
+                      {t.type === 'expense' && !t.categoryName && !t.description && (
+                        <span className={styles.categoryBadge}>
+                          Uncategorized
+                        </span>
+                      )}
                       {t.categoryName && (
                         <span className={styles.categoryBadge}>
                           {t.categoryName}
                         </span>
                       )}
-                      <h3 className={styles.description}>{t.description}</h3>
+                      {t.description && (
+                        <h3 className={styles.description}>{t.description}</h3>
+                      )}
                     </div>
                     <div className={styles.metaRow}>
                       <span className={styles.payer}>
@@ -65,28 +85,58 @@ export default function TransactionList() {
                           ? `From ${t.payer} to ${t.payer === 'Jen' ? 'Cule' : 'Jen'}`
                           : `${t.payer} paid`}
                       </span>
-                      <span className={styles.dot}>•</span>
-                      <span className={styles.timestamp}>{t.timestamp ? format(t.timestamp.toDate(), 'MMM d, h:mm a') : 'Just now'}</span>
-                      {t.userEmail && (
-                        <>
-                          <span className={styles.dot}>•</span>
-                          <span className={styles.uploader} title={t.userEmail}>
-                            {t.userEmail.split('@')[0]}
-                          </span>
-                        </>
-                      )}
+                      <span className={styles.timestamp}>{t.timestamp ? format(t.timestamp.toDate(), 'dd/MM/yyyy') : 'Just now'}</span>
                     </div>
                   </div>
                 </div>
                 
                 <div className={styles.rightInfo}>
                   <div className={styles.amount}>${t.amount.toFixed(2)}</div>
-                  <button 
-                    onClick={() => setDeletingId(t.id)}
-                    className={styles.deleteButton}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  
+                  <div className={styles.actions}>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpenId(menuOpenId === t.id ? null : t.id);
+                      }}
+                      className={styles.menuButton}
+                      aria-label="Actions"
+                    >
+                      <MoreVertical className="w-5 h-5" />
+                    </button>
+                    
+                    <AnimatePresence>
+                      {menuOpenId === t.id && (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                          className={styles.dropdown}
+                        >
+                          <button 
+                            onClick={() => {
+                              setEditingTransaction(t);
+                              setMenuOpenId(null);
+                            }}
+                            className={styles.dropdownItem}
+                          >
+                            <Pencil className="w-4 h-4" />
+                            Edit
+                          </button>
+                          <button 
+                            onClick={() => {
+                              setDeletingId(t.id);
+                              setMenuOpenId(null);
+                            }}
+                            className={`${styles.dropdownItem} ${styles.dropdownItemDelete}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
 
                 {/* Inline Confirmation Overlay */}
@@ -131,6 +181,14 @@ export default function TransactionList() {
             Load More
           </button>
         </div>
+      )}
+
+      {editingTransaction && (
+        <EditTransactionModal
+          transaction={editingTransaction}
+          onClose={() => setEditingTransaction(null)}
+          onUpdate={handleUpdate}
+        />
       )}
     </div>
   );

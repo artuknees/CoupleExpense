@@ -48,9 +48,7 @@ export function useTransactionForm() {
         const statusDoc = await transaction.get(statusRef);
         
         const transRef = doc(collection(db, 'transactions'));
-        const formattedDescription = description.trim()
-          ? description.trim().charAt(0).toUpperCase() + description.trim().slice(1)
-          : (type === 'expense' ? 'Shared Expense' : 'Money Transfer');
+        const formattedDescription = description.trim();
 
         transaction.set(transRef, {
           amount: numAmount,
@@ -69,10 +67,10 @@ export function useTransactionForm() {
           const data = statusDoc.data();
           const amt = data.owedAmount || 0;
           const name = data.owedName;
-          currentNet = name === 'Cule' ? amt : -amt;
+          currentNet = Math.round((name === 'Cule' ? amt : -amt) * 100) / 100;
         }
 
-        const change = type === 'expense' ? numAmount / 2 : numAmount;
+        const change = Math.round((type === 'expense' ? numAmount / 2 : numAmount) * 100) / 100;
         const newNet = payer === 'Jen' ? currentNet + change : currentNet - change;
         const roundedNet = Math.round(newNet * 100) / 100;
 

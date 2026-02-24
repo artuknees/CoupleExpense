@@ -4,6 +4,8 @@
   display: flex;
   justify-content: center;
   border-top: 1px dashed var(--border-color);
+  width: 100%;
+  min-width: 0;
 }
 
 .dangerButton {

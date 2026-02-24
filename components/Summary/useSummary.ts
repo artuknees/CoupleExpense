@@ -77,21 +77,22 @@ export function useSummary() {
 
       snapshot.docs.forEach((doc) => {
         const data = doc.data();
-        const amount = Number(data.amount);
+        const amount = Math.round(Number(data.amount) * 100) / 100;
         const payer = data.payer;
         const type = data.type;
 
-        const change = type === 'expense' ? amount / 2 : amount;
+        const change = Math.round((type === 'expense' ? amount / 2 : amount) * 100) / 100;
         if (payer === 'Jen') netBalance += change;
         else netBalance -= change;
       });
 
       const statusRef = doc(db, 'status', 'current');
-      const roundedBalance = Math.round(Math.abs(netBalance) * 100) / 100;
+      const finalNet = Math.round(netBalance * 100) / 100;
+      const roundedBalance = Math.abs(finalNet);
       await writeBatch(db)
         .set(statusRef, { 
           owedAmount: roundedBalance, 
-          owedName: netBalance >= 0 ? 'Cule' : 'Jen' 
+          owedName: finalNet >= 0 ? 'Cule' : 'Jen' 
         })
         .commit();
       
